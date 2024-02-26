@@ -8,7 +8,10 @@ import time
 import os
 import shutil
 import random
+import json
 
+
+label_dict = {'1': 0, '2': 0, '4': 1, '7': 2}
 
 def convert(img_size, bbox):
     dw = 1. / img_size[0]
@@ -88,6 +91,30 @@ def read_npy():
             cv2.imshow("test", rendered_pic)
             if cv2.waitKey(1) == ord('q'):
                 break
+
+def labelme2yolo(images_class_data, pre_data_path):
+    if not os.path.exists(pre_data_path):
+        os.mkdir(pre_data_path)
+        os.mkdir(os.path.join(pre_data_path, 'labels'))
+        os.mkdir(os.path.join(pre_data_path, 'images'))
+    
+    for labeldir in os.listdir(images_class_data):
+        for filename in os.listdir(os.path.join(images_class_data, labeldir)):
+            if filename.endswith('.json'):
+                json_file_path = os.path.join(images_class_data, labeldir, filename)
+                image_file_path = json_file_path.split('.')[0] + '.jpg'
+                with open(json_file_path) as jsonf:
+                    data = json.load(jsonf)
+                    img_h = data["imageHeight"]
+                    img_w = data["imageWidth"]
+                    shape = data["shapes"][0]
+                    thermal_label = shape["label"]
+                    thermal_bbox = shape["points"]
+                    x, y, w, h = convert([img_w, img_h], thermal_bbox)
+                new_txt_name = filename.split('.')[0] + '.txt'
+                with open(os.path.join(pre_data_path, 'labels', new_txt_name), 'w') as txtf:
+                    txtf.write(str(label_dict[thermal_label]) + " " + " ".join([str(x), str(y), str(w), str(h)]))
+                shutil.copy(image_file_path, os.path.join(pre_data_path, 'images'))
 
 def label_jpg(onnx_model_path, image_path, label_path):
     onnx_model_path = "../Models/onnx/toilet3.onnx"
@@ -213,7 +240,7 @@ if __name__ == "__main__":
     data_path = 'data/topdown_data'  # 原始npy文件夹
     class_path = 'data/classified_data'  # 分类后的npy文件夹
     image_data = 'data/images_class_data'  # 转为图片后的文件夹
-    label_data = 'data/pre_data/'
+    pre_data = 'data/pre_data/'
     dataset_path = 'data/toilet_data'
     onnx_model_path = "Models/onnx/toilet3.onnx"
     if not os.path.exists(class_path):
@@ -221,8 +248,9 @@ if __name__ == "__main__":
     if not os.path.exists(image_data):
         os.mkdir(image_data)
 
-    classify_data(data_path, class_path)  # 按照action来对数据进行分类
-    npy2jpg(class_path, image_data)  # 把npy文件转化为对应的jpg
+    # classify_data(data_path, class_path)  # 按照action来对数据进行分类
+    # npy2jpg(class_path, image_data)  # 把npy文件转化为对应的jpg
+    labelme2yolo(image_data, pre_data)  # 把labelme得到的class-图片+json转化为yolo需要的images+labels格式
     # label_jpg(onnx_model_path, image_data, label_data)  # 把jpg文件打上框作为label
     # make_dataset(label_data, dataset_path)  # 把图片和标签数据制作为yolo训练用的数据集
     
