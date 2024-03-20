@@ -4,16 +4,16 @@ import cv2
 import numpy as np
 import torch
 from utils.preprocess import letterbox, scale_coords, non_max_suppression
-
+from sort import *
 
 class YOLOModel:
-    def __init__(self, model_path, targets_num=5):
+    def __init__(self, model_path):
         self.model = model_path
         self.session = onnxruntime.InferenceSession(model_path)
-        self.targets_num = targets_num
+        self.mot_tracker = Sort()
         pass
     
-    def inference(self, img):
+    def inference(self, img, conf_thres=0.2, iou_thres=0.4):
         im = letterbox(img)[0]  # padded resize
         im = im.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
         im = np.ascontiguousarray(im)
@@ -29,12 +29,16 @@ class YOLOModel:
         ort_inputs = {self.session.get_inputs()[0].name:im}
         ort_outs = self.session.run(None, ort_inputs)[0]
         ort_outs = torch.tensor(ort_outs)
-        ort_outs = non_max_suppression(ort_outs, conf_thres=0.2, iou_thres=0.4, classes=None, agnostic=False, max_det=self.targets_num)
+        ort_outs = non_max_suppression(ort_outs, conf_thres=conf_thres, iou_thres=iou_thres, classes=None, agnostic=False, max_det=5)
         # ort_outs = np.squeeze(ort_outs, axis=0)
         detections = ort_outs[0].numpy()
         # print(ort_outs)
         boxs = []
+        # print(detections[:, :5])
+        id = self.mot_tracker.update(detections[:, :5])[:, -1:]
+        
         for detection in detections:
+            scores = detection[4:]
             classID = int(detection[5])
             confidence = detection[4]
             # print(classID)
@@ -47,6 +51,15 @@ class YOLOModel:
             # y2 = int(y + height/2)
             x1 ,y1, x2, y2 = detection[0:4]
             boxs.append([x1, y1, x2, y2, classID, confidence])
+        
+        if len(boxs)>0:
+            if len(id) < len(boxs):
+                for i in range(len(boxs)-len(id)):
+                    id = np.vstack([id, [-1]])
+            # print(boxs, id)
+            boxs = np.concatenate((boxs, id), axis=1)
+        else:
+            boxs = []
         return boxs
         
 if __name__ == '__main__':

@@ -12,23 +12,28 @@ class LoadData:
         self.files = []
         self.file_index = 0
     def load(self, path=None, subdir=None):
+        self.file_index = 0
         if path is None:
             pass
         else:
             self.path = path
         if subdir is None:
             for record_time in os.listdir(self.path):
-                for frame in os.listdir(self.path+record_time):
+                frames = os.listdir(os.path.join(self.path, record_time))
+                frames.sort(key=lambda x:int(x.split('_')[2][:-4]))
+                for frame in frames:
                     self.files.append(record_time+'/'+frame)
         else:
-            for frame in os.listdir(self.path+subdir):
+            frames = os.listdir(os.path.join(self.path,subdir))
+            frames.sort(key=lambda x:int(x.split('_')[2][:-4]))
+            for frame in frames:
                     self.files.append(subdir+'/'+frame)
     def get(self):
         try:
-            frame = np.load(self.path+self.files[self.file_index])
+            frame = np.load(os.path.join(self.path, self.files[self.file_index]))
             self.file_index += 1
         except IndexError:
-            print("Run out of data")
+            print("Index reach to {}. Run out of data".format(self.file_index))
             return None
         return frame
 
@@ -46,6 +51,9 @@ class LoadData:
 
     def src(self):
         return self.path+self.files[self.file_index]
+    
+    def __len__(self):
+        return len(self.files)
 
 class HumanDetector:
     def __init__(self, empty_map=None):
