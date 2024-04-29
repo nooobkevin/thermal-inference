@@ -14,7 +14,7 @@ from senxor.utils import (
     data_to_frame, cv_render, cv_filter
 )
 sys.path.append("Models")
-from YOLOnnx import YOLOModel
+from models.YOLOnnx import YOLOModel
 from utils.preprocess import scale_coords
 
 import matplotlib.image

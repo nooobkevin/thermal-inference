@@ -3,7 +3,7 @@ import matplotlib.image
 import cv2
 import sys
 sys.path.append("Models")
-from YOLOnnx import YOLOModel
+from models.YOLOnnx import YOLOModel
 from utils.preprocess import scale_coords
 from utils.detection import LoadData
 import time
@@ -58,8 +58,7 @@ def read_pics(loader, subdir, num=3):
         # merged_pic = cv2.merge(pics)
         pics = np.transpose(pics, axes=(1,2,0))
     elif action in ('003'):
-        
-    # print(pics.shape)
+        print(pics.shape)
     return pics
 
 

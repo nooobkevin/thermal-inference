@@ -1,0 +1,26 @@
+[project]
+name = "thermal-inference"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "Chuen Hei Tai", email = "nooobkevin@ChuendeMacBook-Air.local"},
+]
+dependencies = [
+    "opencv-python>=4.9.0.80",
+    "numpy>=1.26.4",
+    "matplotlib>=3.8.4",
+    "Faker>=24.14.1",
+    "torch>=2.3.0",
+    "onnxruntime>=1.17.3",
+    "onnx>=1.16.0",
+    "filterpy>=1.4.5",
+    "scikit-image>=0.23.2",
+    "torchvision>=0.18.0",
+]
+requires-python = "==3.10.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
