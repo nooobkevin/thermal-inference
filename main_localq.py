@@ -13,7 +13,6 @@ import time
 from senxor.utils import (
     data_to_frame, cv_render, cv_filter
 )
-sys.path.append("Models")
 from models.YOLOnnx import YOLOModel
 from utils.preprocess import scale_coords
 

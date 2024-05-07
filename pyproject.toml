@@ -16,6 +16,10 @@ dependencies = [
     "filterpy>=1.4.5",
     "scikit-image>=0.23.2",
     "torchvision>=0.18.0",
+    "ipykernel>=6.29.4",
+    "crcmod>=1.7",
+    "cmapy>=0.6.6",
+    "pip>=24.0",
 ]
 requires-python = "==3.10.*"
 readme = "README.md"
