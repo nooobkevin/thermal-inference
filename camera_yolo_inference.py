@@ -5,6 +5,8 @@ from senxor.utils import (
 import sys
 import numpy as np
 import cv2
+
+model_path='/Users/nooobkevin/Projects/thingx/thermal-inference/yolo_models/epoch20.onnx'
 CLASSES={
   0: "60deg_standing",
   1: "60deg_walking",
@@ -29,10 +31,10 @@ CLASSES={
 }
 
 ACTUAL_ANGLE=[
-              "30deg",
-              "40deg",
+            #   "30deg",
+            #   "40deg",
               "50deg",
-              '60deg',
+            #   '60deg',
             ]
 
 colors = np.random.uniform(0, 255, size=(len(CLASSES), 3))
@@ -90,7 +92,7 @@ def load_model(path:str="yolov5s.onnx"):
 if __name__ == "__main__":
     # Show frame
     senxor = SenxorConnect()
-    model=load_model("/Users/nooobkevin/Projects/thingx/best.onnx")
+    model=load_model(model_path)
     scale=1.0
     while True:
         data = senxor.get()
@@ -103,6 +105,7 @@ if __name__ == "__main__":
         frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
         frame=cv2.resize(frame, (224,224), interpolation=cv2.INTER_LINEAR)
         frame = frame.astype(np.uint8)  # Convert to 8-bit unsigned integer
+        frame = cv2.flip(frame, 1)
         blob = cv2.dnn.blobFromImage(frame, 
                                      scalefactor=1 / 255, 
                                      size=(224, 224), 
@@ -122,7 +125,7 @@ if __name__ == "__main__":
         for i in range(rows):
             classes_scores = outputs[0][i][4:]
             (minScore, maxScore, minClassLoc, (x, maxClassIndex)) = cv2.minMaxLoc(classes_scores)
-            if maxScore >= 0.25:
+            if maxScore >= 0.05:
                 box = [
                     outputs[0][i][0] - (0.5 * outputs[0][i][2]),
                     outputs[0][i][1] - (0.5 * outputs[0][i][3]),
@@ -166,4 +169,5 @@ if __name__ == "__main__":
         
         if cv2.waitKey(1) == ord('q'):
             break
+    senxor.mi48.stop()
     cv2.destroyAllWindows()

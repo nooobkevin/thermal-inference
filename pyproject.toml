@@ -20,6 +20,9 @@ dependencies = [
     "crcmod>=1.7",
     "cmapy>=0.6.6",
     "pip>=24.0",
+    "ultralytics>=8.2.5",
+    "setuptools>=69.5.1",
+    "dill>=0.3.8",
 ]
 requires-python = "==3.10.*"
 readme = "README.md"

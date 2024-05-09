@@ -36,15 +36,22 @@ def data_to_frame(data, shape):
 if __name__ == "__main__":
     # Show frame
     senxor = SenxorConnect()
-    while True:
-        data = senxor.get()
-        if data.any():
-            frame = data_to_frame(data, (62, 80))
-            frame=frame.astype(np.float32)
-            frame=cv2.GaussianBlur(frame, (5,5), 0)
-            frame=cv2.normalize(frame, None, 0, 255, cv2.NORM_MINMAX)
-            frame = frame.astype(np.uint8)  # Convert to 8-bit unsigned integer
-            cv2.imshow("Frame", frame)
-        if cv2.waitKey(1) == ord('q'):
-            break
-    cv2.destroyAllWindows()
+    try:
+        while True:
+            data = senxor.get()
+            pressed_key = cv2.waitKey(1)
+            if data.any():
+                frame = data_to_frame(data, (62, 80),hflip=True)
+                frame=frame.astype(np.float32)
+                frame=cv2.GaussianBlur(frame, (5,5), 0)
+                # frame=cv2.threshold(frame,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+                frame=cv2.normalize(frame, None, 0, 255, cv2.NORM_MINMAX)
+                frame=cv2.resize(frame, (224, 224), interpolation=cv2.INTER_LINEAR)
+                frame = frame.astype(np.uint8)  # Convert to 8-bit unsigned integer
+                cv2.imshow("Frame", frame)
+            if pressed_key == ord('q'):
+                break
+    finally:
+        print("Closing connection")
+        senxor.mi48.stop()
+        cv2.destroyAllWindows()
